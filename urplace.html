@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lingkar Lentera - Ur Place</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.onload = () => {
+      const messageInput = document.getElementById('message');
+      const status = document.getElementById('status');
+
+      // Create character count element
+      const countElem = document.createElement('div');
+      countElem.style.textAlign = 'right';
+      countElem.style.color = '#a3d1ff';
+      countElem.style.marginTop = '0.3rem';
+      countElem.style.fontSize = '0.9rem';
+      countElem.textContent = 'Jumlah karakter: 0';
+      messageInput.parentNode.insertBefore(countElem, status);
+
+      messageInput.addEventListener('input', () => {
+        countElem.textContent = 'Jumlah karakter: ' + messageInput.value.length;
+      });
+    };
+  </script>
+</head>
+<body>
+  <main class="container" role="main" aria-label="Halaman Ur Place">
+    <h1>Ur Place</h1>
+    <div style="text-align:center; margin-bottom: 1rem;">
+      <a href="index.html" class="btn-primary" role="button" aria-label="Kembali ke Beranda">Kembali ke Beranda</a>
+    </div>
+    <form id="messageForm">
+      <input type="text" id="name" name="name" placeholder="Nama (Opsional)" aria-label="Nama (Opsional)" />
+      <textarea id="message" name="message" placeholder="Cerita mu!" rows="6" required aria-label="Cerita mu!"></textarea>
+      <button type="submit" aria-label="Kirim Cerita">Kirim Cerita</button>
+    </form>
+    <p id="status" style="text-align:center; margin-top:1rem;" aria-live="polite"></p>
+  </main>
+
+  <div id="scroll-progress-container" aria-hidden="true" title="Scroll Progress">
+    <div id="scroll-progress-bar"></div>
+  </div>
+
+  <div class="floating-icon" aria-hidden="true" title="Lingkar Lentera Icon"></div>
+
+  <footer role="contentinfo">
+    &copy; 2024 Lingkar Lentera - Semua hak cipta dilindungi.<br />
+    Made by Aufaa Fashiihah Putry   <a href="https://instagram.com/aufaaputry" target="_blank" rel="noopener noreferrer">@aufaaputry</a><br />
+    Partner: Muhammad Jepry   <a href="https://instagram.com/jepp_65" target="_blank" rel="noopener noreferrer">@jepp_65</a>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    const form = document.getElementById('messageForm');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      if (!message) {
+        status.textContent = 'Cerita tidak boleh kosong.';
+        return;
+      }
+
+      const newMessageRef = database.ref('messages').push();
+      newMessageRef.set({
+        name: name || 'Anonim',
+        message: message,
+        timestamp: Date.now(),
+        read: false
+      }).then(() => {
+        status.textContent = 'Cerita berhasil dikirim!';
+        form.reset();
+      }).catch((error) => {
+        console.error('Firebase write failed:', error);
+        status.textContent = 'Gagal mengirim cerita. Coba lagi.';
+      });
+    });
+
+    // Scroll progress bar update
+    const progressBar = document.getElementById('scroll-progress-bar');
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      progressBar.style.width = scrollPercent + '%';
+    });
+
+    // Floating icon animation
+    const floatingIcon = document.querySelector('.floating-icon');
+    let pos = 0;
+    let direction = 1;
+    function animateIcon() {
+      pos += direction * 0.5;
+      if (pos > 15 || pos < 0) direction *= -1;
+      floatingIcon.style.transform = `translateY(${pos}px)`;
+      requestAnimationFrame(animateIcon);
+    }
+    animateIcon();
+  </script>
+</body>
+</html>

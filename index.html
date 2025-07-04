@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="description" content="Lingkar Lentera - Profile of Aufaa Fashihah Putry, Duta GenRe Putri Kab.Kapuas 2024" />
+  <title>Lingkar Lentera - Beranda</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Dynamic greeting based on time of day in Indonesian
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Selamat Pagi!";
+      if (hour < 15) return "Selamat Siang!";
+      if (hour < 18) return "Selamat Sore!";
+      return "Selamat Malam!";
+    }
+    window.onload = () => {
+      document.getElementById('greeting').textContent = getGreeting();
+    };
+  </script>
+</head>
+<body>
+  <main class="container" role="main" aria-label="Profil Lingkar Lentera">
+    <img src="WhatsApp Image 2025-06-18 at 21.12.12_7cfc25ef.jpg" alt="Foto Profil Aufaa Fashihah Putry" class="profile-photo" tabindex="0" />
+    <h1>LINGKAR LENTERA - AUFAA FASHIIHAH PUTRY</h1>
+    <h2 class="subtitle">Duta GenRe Putri Kab.Kapuas 2024</h2>
+    <h3 id="greeting" aria-live="polite" style="margin-bottom: 2rem; text-align: center; color: #a3d1ff; text-shadow: 0 0 10px #56ccf2;">...</h3>
+    <div style="text-align:center;">
+      <a href="urplace.html" class="btn-primary" role="button" aria-label="Link ke halaman Ur Place">Ur Place</a>
+    </div>
+  </main>
+
+  <div id="scroll-progress-container" aria-hidden="true" title="Scroll Progress">
+    <div id="scroll-progress-bar"></div>
+  </div>
+
+  <div class="floating-icon" aria-hidden="true" title="Lingkar Lentera Icon"></div>
+
+  <footer role="contentinfo">
+    &copy; 2025 Lingkar Lentera - Semua hak cipta dilindungi.<br />
+    Made by Aufaa Fashiihah Putry   <a href="https://instagram.com/aufaaputry" target="_blank" rel="noopener noreferrer">@aufaaputry</a><br />
+    Partner: Muhammad Jepry   <a href="https://instagram.com/jepp_65" target="_blank" rel="noopener noreferrer">@jepp_65</a>
+  </footer>
+
+  <script>
+    // Floating icon animation
+    const floatingIcon = document.querySelector('.floating-icon');
+    let pos = 0;
+    let direction = 1;
+    function animateIcon() {
+      pos += direction * 0.5;
+      if (pos > 15 || pos < 0) direction *= -1;
+      floatingIcon.style.transform = `translateY(${pos}px)`;
+      requestAnimationFrame(animateIcon);
+    }
+    animateIcon();
+
+    // Scroll progress bar update
+    const progressBar = document.getElementById('scroll-progress-bar');
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      progressBar.style.width = scrollPercent + '%';
+    });
+  </script>
+</body>
+</html>

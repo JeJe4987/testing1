@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Pesan Masuk</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.onload = () => {
+      const searchInput = document.getElementById('searchMessages');
+      const messagesDiv = document.getElementById('messages');
+
+      searchInput.addEventListener('input', () => {
+        const filter = searchInput.value.toLowerCase();
+        const messageItems = messagesDiv.getElementsByClassName('message-item');
+        Array.from(messageItems).forEach(item => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(filter)) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    };
+  </script>
+</head>
+<body>
+  <div class="container" id="login-container">
+    <h1>Masuk Admin</h1>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required class="login-input" />
+      <input type="password" id="password" placeholder="Password" required class="login-input" />
+      <button type="submit" class="login-button">Masuk</button>
+      <p id="loginError" class="login-error"></p>
+    </form>
+  </div>
+
+  <div class="container" id="content" style="display:none;">
+    <h1>Pesan Masuk</h1>
+    <input type="text" id="searchMessages" placeholder="Cari pesan..." style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 10px; border: none; box-shadow: 0 0 10px rgba(77, 166, 255, 0.8);" />
+    <div id="messages" class="message-list"></div>
+
+    <h2>Login Terakhir</h2>
+    <div id="loginInfo" class="message-list" style="max-height: 200px; overflow-y: auto; margin-top: 1rem; border-radius: 10px; background: rgba(255, 255, 255, 0.1); padding: 1rem; box-shadow: inset 0 0 10px rgba(77, 166, 255, 0.7);"></div>
+  </div>
+
+  <!-- Modal Popup for full message -->
+  <div id="messageModal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: #ffffff; margin: 10% auto; padding: 25px; border-radius: 15px; width: 80%; max-width: 600px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); position: relative; color: #222222;">
+      <span id="closeModal" style="color: #555555; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+      <h2 style="color: #333333;">Isi Pesan</h2>
+      <p id="modalMessageContent" style="white-space: pre-wrap; font-size: 1.2rem; color: #111111; line-height: 1.5;"></p>
+    </div>
+  </div>
+
+  <script>
+    // Close modal when clicking on close button or outside modal content
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('messageModal');
+      const closeModalBtn = document.getElementById('closeModal');
+
+      closeModalBtn.onclick = () => {
+        modal.style.display = 'none';
+      };
+
+      window.onclick = (event) => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      };
+    });
+  </script>
+
+  <footer>
+    &copy; 2025 Lingkar Lentera - Semua hak cipta dilindungi.<br />
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+    <script>
+      const loginForm = document.getElementById('loginForm');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const loginError = document.getElementById('loginError');
+      const content = document.getElementById('content');
+      const loginContainer = document.getElementById('login-container');
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          loginContainer.style.display = 'none';
+          content.style.display = 'block';
+          loginError.style.display = 'none';
+
+          // Simpan info login perangkat ke database
+          const user = userCredential.user;
+          const deviceInfo = navigator.userAgent;
+          const loginData = {
+            uid: user.uid,
+            email: user.email,
+            device: deviceInfo,
+            timestamp: Date.now()
+          };
+          database.ref('logins').push(loginData);
+        })
+        .catch((error) => {
+          loginError.textContent = 'Email atau password salah. Silakan coba lagi.';
+          loginError.style.display = 'block';
+        });
+      });
+
+      const messagesDiv = document.getElementById('messages');
+      const messagesRef = database.ref('messages');
+
+      messagesRef.on('child_added', (snapshot) => {
+        const msg = snapshot.val();
+        const key = snapshot.key;
+        const messageItem = document.createElement('div');
+        messageItem.classList.add('message-item');
+
+        // Mark message as read if not already
+        if (!msg.read) {
+          messagesRef.child(key).update({ read: true });
+        }
+
+        const nameElem = document.createElement('div');
+        nameElem.classList.add('message-name');
+        nameElem.textContent = msg.name ? msg.name : 'Anonim';
+
+        // Read/unread indicator
+        const readIndicator = document.createElement('span');
+        readIndicator.style.display = 'inline-block';
+        readIndicator.style.width = '12px';
+        readIndicator.style.height = '12px';
+        readIndicator.style.borderRadius = '50%';
+        readIndicator.style.marginLeft = '10px';
+        readIndicator.style.backgroundColor = msg.read ? '#4caf50' : '#f44336'; // green if read, red if unread
+        nameElem.appendChild(readIndicator);
+
+        const textElem = document.createElement('div');
+        textElem.classList.add('message-text');
+        textElem.textContent = msg.message;
+
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Hapus';
+        deleteBtn.style.marginTop = '8px';
+        deleteBtn.style.backgroundColor = '#f44336';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.borderRadius = '8px';
+        deleteBtn.style.padding = '4px 10px';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.float = 'right';
+        deleteBtn.addEventListener('click', () => {
+          if (confirm('Hapus pesan ini?')) {
+            messagesRef.child(key).remove();
+            messageItem.remove();
+          }
+        });
+
+      messageItem.appendChild(nameElem);
+      messageItem.appendChild(deleteBtn);
+      messageItem.appendChild(textElem);
+
+      // Add click event to open modal and mark as read
+      messageItem.addEventListener('click', () => {
+        document.getElementById('modalMessageContent').textContent = msg.message;
+        document.getElementById('messageModal').style.display = 'block';
+
+        if (!msg.read) {
+          messagesRef.child(key).update({ read: true });
+          nameElem.style.backgroundColor = 'rgba(76, 175, 80, 0.3)'; // update indicator color to greenish
+          nameElem.style.borderLeft = '5px solid #4caf50';
+        }
+      });
+
+      messagesDiv.prepend(messageItem);
+
+      // Add animation class for smooth appearance
+      setTimeout(() => {
+        messageItem.classList.add('show');
+      }, 10);
+    });
+
+      // Tampilkan info login perangkat
+      const loginInfoDiv = document.getElementById('loginInfo');
+      const loginsRef = database.ref('logins').limitToLast(10);
+      loginsRef.on('child_added', (snapshot) => {
+        const login = snapshot.val();
+        const user = firebase.auth().currentUser;
+        if (user && login.uid === user.uid) {
+          const loginItem = document.createElement('div');
+          loginItem.classList.add('message-item');
+          const date = new Date(login.timestamp);
+          loginItem.textContent = `${login.email} - ${date.toLocaleString()} - ${login.device}`;
+          loginInfoDiv.prepend(loginItem);
+        }
+      });
+    </script>
+</body>
+</html>
